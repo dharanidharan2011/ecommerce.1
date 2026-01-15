@@ -1,0 +1,186 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard - E-Commerce Store{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h1><i class="bi bi-speedometer2"></i> Admin Dashboard</h1>
+    </div>
+</div>
+
+<!-- Stats Cards -->
+<div class="row mb-4">
+    <div class="col-md-3 mb-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title">Total Orders</h6>
+                        <h2 class="mb-0">{{ total_orders }}</h2>
+                    </div>
+                    <i class="bi bi-cart-check" style="font-size: 3rem;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title">Total Revenue</h6>
+                        <h2 class="mb-0">${{ "%.0f"|format(total_revenue) }}</h2>
+                    </div>
+                    <i class="bi bi-currency-dollar" style="font-size: 3rem;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title">Products</h6>
+                        <h2 class="mb-0">{{ total_products }}</h2>
+                    </div>
+                    <i class="bi bi-box-seam" style="font-size: 3rem;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <div class="card bg-warning text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title">Users</h6>
+                        <h2 class="mb-0">{{ total_users }}</h2>
+                    </div>
+                    <i class="bi bi-people" style="font-size: 3rem;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Recent Orders -->
+    <div class="col-lg-8 mb-4">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-receipt"></i> Recent Orders</h5>
+                <a href="{{ url_for('admin.orders') }}" class="btn btn-sm btn-outline-primary">View All</a>
+            </div>
+            <div class="card-body">
+                {% if recent_orders %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Order ID</th>
+                                <th>Customer</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                                <th>Date</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for order in recent_orders %}
+                            <tr>
+                                <td>#{{ order.id }}</td>
+                                <td>{{ order.user.username }}</td>
+                                <td>${{ "%.2f"|format(order.total_amount) }}</td>
+                                <td>
+                                    <span class="badge bg-{{ 'success' if order.status == 'completed' else 'warning' if order.status == 'pending' else 'info' }}">
+                                        {{ order.status|title }}
+                                    </span>
+                                </td>
+                                <td>{{ order.created_at.strftime('%m/%d/%Y') }}</td>
+                                <td>
+                                    <a href="{{ url_for('admin.order_details', id=order.id) }}" class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-eye"></i> View
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted text-center">No orders yet.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Low Stock Products -->
+    <div class="col-lg-4 mb-4">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-exclamation-triangle"></i> Low Stock</h5>
+                <a href="{{ url_for('admin.products') }}" class="btn btn-sm btn-outline-primary">Manage</a>
+            </div>
+            <div class="card-body">
+                {% if low_stock_products %}
+                <div class="list-group list-group-flush">
+                    {% for product in low_stock_products %}
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>{{ product.name }}</strong>
+                            <br>
+                            <small class="text-muted">{{ product.category }}</small>
+                        </div>
+                        <span class="badge bg-danger">{{ product.stock }} left</span>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-muted text-center">All products are well stocked!</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-lightning"></i> Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 mb-3">
+                        <a href="{{ url_for('admin.add_product') }}" class="btn btn-primary w-100">
+                            <i class="bi bi-plus-circle"></i> Add Product
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <a href="{{ url_for('admin.products') }}" class="btn btn-outline-primary w-100">
+                            <i class="bi bi-box-seam"></i> Manage Products
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <a href="{{ url_for('admin.orders') }}" class="btn btn-outline-primary w-100">
+                            <i class="bi bi-receipt"></i> Manage Orders
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <a href="{{ url_for('admin.users') }}" class="btn btn-outline-primary w-100">
+                            <i class="bi bi-people"></i> Manage Users
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
